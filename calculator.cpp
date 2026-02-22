@@ -1,9 +1,80 @@
 #include <windows.h>
+#include <stdlib.h>
+#include <stdio.h>
 
+#define ID_EDIT1 101
+#define ID_EDIT2 102
+#define ID_ADD   201
+#define ID_SUB   202
+#define ID_MUL   203
+#define ID_DIV   204
+
+HWND hEdit1, hEdit2, hText;
 /* This is where all the input to the window goes to */
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	switch(Message) {
-		
+		case WM_CREATE: {
+    		hText = CreateWindow("STATIC","Please input two numbers",
+				WS_VISIBLE | WS_CHILD | SS_CENTER,
+				15, 15, 220, 25,
+				hwnd, NULL, NULL, NULL);
+
+    		hEdit1 = CreateWindow("EDIT", "",
+       			WS_VISIBLE | WS_CHILD | WS_BORDER | ES_CENTER,
+        		60, 50, 130, 25,
+        		hwnd, (HMENU)ID_EDIT1, NULL, NULL);
+
+    		hEdit2 = CreateWindow("EDIT", "",
+        		WS_VISIBLE | WS_CHILD | WS_BORDER | ES_CENTER,
+        		60, 80, 130, 25,
+        		hwnd, (HMENU)ID_EDIT2, NULL, NULL);
+
+    		CreateWindow("BUTTON", "+", WS_VISIBLE | WS_CHILD,
+        		55, 120, 30, 25,
+        		hwnd, (HMENU)ID_ADD, NULL, NULL);
+
+    		CreateWindow("BUTTON", "-", WS_VISIBLE | WS_CHILD,
+        		90, 120, 30, 25,
+        		hwnd, (HMENU)ID_SUB, NULL, NULL);
+
+    		CreateWindow("BUTTON", "*", WS_VISIBLE | WS_CHILD,
+        		125, 120, 30, 25,
+        		hwnd, (HMENU)ID_MUL, NULL, NULL);
+
+    		CreateWindow("BUTTON", "/", WS_VISIBLE | WS_CHILD,
+        		160, 120, 30, 25,
+        		hwnd, (HMENU)ID_DIV, NULL, NULL);
+    	
+			break;
+		}
+
+		case WM_COMMAND: {
+    		char t1[100], t2[100], out[100];
+    		double a,b,r;
+
+    		GetWindowText(hEdit1,t1,100);
+   			GetWindowText(hEdit2,t2,100);
+
+    		a = atof(t1);
+    		b = atof(t2);
+
+    		switch(LOWORD(wParam)) {
+        		case ID_ADD: r=a+b; break;
+        		case ID_SUB: r=a-b; break;
+        		case ID_MUL: r=a*b; break;
+        		case ID_DIV:
+            		if(b==0){
+                	MessageBox(hwnd,"Cannot divide by zero","Error",MB_OK);
+                	return 0;
+            		}
+            		r=a/b; break;
+        		default: return 0;
+    		}
+
+    		sprintf(out,"%f",r);
+    		MessageBox(hwnd,out,"Result",MB_OK);
+    		break;
+}
 		/* Upon destruction, tell the main thread to stop */
 		case WM_DESTROY: {
 			PostQuitMessage(0);
@@ -31,7 +102,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	wc.hCursor	 = LoadCursor(NULL, IDC_ARROW);
 	
 	/* White, COLOR_WINDOW is just a #define for a system color, try Ctrl+Clicking it */
-	wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
+	wc.hbrBackground = CreateSolidBrush(RGB(0, 200, 255));
 	wc.lpszClassName = "WindowClass";
 	wc.hIcon	 = LoadIcon(NULL, IDI_APPLICATION); /* Load a standard icon */
 	wc.hIconSm	 = LoadIcon(NULL, IDI_APPLICATION); /* use the name "A" to use the project icon */
@@ -41,11 +112,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		return 0;
 	}
 
-	hwnd = CreateWindowEx(WS_EX_CLIENTEDGE,"WindowClass","Caption",WS_VISIBLE|WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, /* x */
-		CW_USEDEFAULT, /* y */
-		640, /* width */
-		480, /* height */
+	hwnd = CreateWindowEx(WS_EX_CLIENTEDGE,"WindowClass","My Calculator",WS_VISIBLE | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
+		CW_USEDEFAULT, 
+		CW_USEDEFAULT, 
+		250, 
+		200, 
 		NULL,NULL,hInstance,NULL);
 
 	if(hwnd == NULL) {
